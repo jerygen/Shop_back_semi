@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d3915b82-7863-4723-897e-4220c6773020" name="변경" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+        <option value="Interface" />
+      </list>
+    </option>
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="9.570023741882423E-170" />
+      <entry key="S2" value="9.3774318495711E-43" />
+      <entry key="S5" value="2.5932423055142162E-17" />
+      <entry key="S10" value="9.914080197306048E-9" />
+      <entry key="S30" value="0.008020179859304925" />
+      <entry key="S60" value="0.31718514502572304" />
+      <entry key="M2" value="2.4707938850514437" />
+      <entry key="M5" value="12.584276062893345" />
+      <entry key="M10" value="28.782330868516915" />
+      <entry key="M15" value="42.938146646673516" />
+      <entry key="M30" value="78.44751964903632" />
+      <entry key="H1" value="124.97714274213591" />
+      <entry key="H2" value="168.92590957311126" />
+      <entry key="H4" value="200.61705990709294" />
+      <entry key="D1" value="234.28990877598437" />
+      <entry key="W1" value="240.8764925661807" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0000000062024714" />
+      <entry key="S30" value="1.0047766042634387" />
+      <entry key="S60" value="1.1828345003553649" />
+      <entry key="M2" value="2.28992479181067" />
+      <entry key="M5" value="6.343782192517308" />
+      <entry key="M10" value="12.935684354132926" />
+      <entry key="M15" value="19.458563776975385" />
+      <entry key="M30" value="35.13719601905669" />
+      <entry key="H1" value="52.43300487357994" />
+      <entry key="H2" value="66.47945286687798" />
+      <entry key="H4" value="75.72040326142184" />
+      <entry key="D1" value="84.95510756226692" />
+      <entry key="W1" value="86.70347960780504" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.3174172808891923E-4" />
+      <entry key="MS500" value="0.1674729503034801" />
+      <entry key="S2" value="0.6397144603613412" />
+      <entry key="S5" value="0.836362336316847" />
+      <entry key="S10" value="0.9145284928923226" />
+      <entry key="S30" value="0.9831321954860641" />
+      <entry key="S60" value="1.4776269584790824" />
+      <entry key="M2" value="4.721385118473505" />
+      <entry key="M5" value="18.859854642065418" />
+      <entry key="M10" value="41.640540522765406" />
+      <entry key="M15" value="62.31964679519979" />
+      <entry key="M30" value="113.5168830699109" />
+      <entry key="H1" value="177.35940236864226" />
+      <entry key="H2" value="235.37276497257517" />
+      <entry key="H4" value="276.31869678527084" />
+      <entry key="D1" value="319.24146667726365" />
+      <entry key="W1" value="327.57945350364645" />
+    </decayedShown>
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="3EhC3N8ektmbhRgaCg3ldqzkbFB" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Projects/Shop/Shop/src/main/java/web/mvc/jwt",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Projects\Shop\Shop\src\main\java\web\mvc\jwt" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="web.mvc.jwt" />
+      <recent name="web.mvc.config" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="ShopApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="Shop" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="web.mvc.ShopApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.24374.151" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.24374.151" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="d3915b82-7863-4723-897e-4220c6773020" name="변경" comment="" />
+      <created>1780621215329</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1780621215329</updated>
+      <workItem from="1780621216427" duration="9345000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
