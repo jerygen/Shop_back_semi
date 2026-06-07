@@ -1,0 +1,30 @@
+package web.mvc.security;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import web.mvc.domain.User;
+import web.mvc.repository.UserRepository;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class CustomDetailsService implements UserDetailsService {
+    private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        log.info("username={}", username);
+        User user = userRepository.findById(username);
+        if(user != null) {//있다.
+            log.info("user={}", user);
+            return new CustomUserDetails(user);
+        }
+
+        return null;
+    }
+
+}
