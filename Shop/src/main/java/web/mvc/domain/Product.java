@@ -22,7 +22,7 @@ public class Product {
     private String productId;
     private String productName;
 
-    private String price;
+    private Integer price;
     private Integer stock;
 
     @Column(length = 50)

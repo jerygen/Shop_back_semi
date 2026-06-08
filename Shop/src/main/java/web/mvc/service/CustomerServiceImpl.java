@@ -3,6 +3,7 @@ package web.mvc.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import web.mvc.domain.Product;
+import web.mvc.dto.request.ProductReq;
 import web.mvc.exception.ErrorCode;
 import web.mvc.exception.ProductException;
 import web.mvc.repository.ProductRepository;
@@ -16,7 +17,7 @@ public class CustomerServiceImpl implements CustomerService{
     private final ProductRepository productRepository;
 
     @Override
-    public List<Product> findProductAll() {
+    public List<ProductReq> findProductAll() {
         List<Product> products = productRepository.findAll();
         if(products.isEmpty()){
             throw new ProductException(ErrorCode.PRODUCT_NOT_FOUND);

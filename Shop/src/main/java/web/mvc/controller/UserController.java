@@ -19,7 +19,7 @@ public class UserController {
     @RequestMapping("/register")
     public ResponseEntity<ApiResponse<User>> register(User user) {
         userService.signUp(user);
-        return ResponseEntity.ok(ApiResponse.success(user, "회원가입이 완료됐습니다."));
+        return ResponseEntity.ok(ApiResponse.created(user));
     }
 
     @PostMapping("/logout")

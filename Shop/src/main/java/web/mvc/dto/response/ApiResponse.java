@@ -12,10 +12,10 @@ public class ApiResponse<T> {
     private String message;
     private T data;
 
-    public static <T> ApiResponse<T> success(T data, String message) {
+    public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>(
                 HttpStatus.OK.value(),
-                message,
+                "요청이 성공했습니다.",
                 data
         );
     }

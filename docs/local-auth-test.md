@@ -17,18 +17,13 @@ cd Shop
 docker compose -f docker-compose.test.yml up -d mysql-test
 ```
 
-Then run the tests:
+Then run the test from IntelliJ:
 
-```bash
-./mvnw test
+```text
+src/test/java/web/mvc/UserAuthIntegrationTest.java
 ```
 
-On Windows:
-
-```powershell
-cd Shop
-.\mvnw.cmd test
-```
+Open the file and click the run icon next to `registerLoginLogout()`.
 
 The test database is created from:
 
@@ -39,9 +34,9 @@ docker-compose.test.yml
 The default test connection is:
 
 ```properties
-TEST_DB_URL=jdbc:mysql://localhost:3307/shop_test?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-TEST_DB_USERNAME=shop_test_user
-TEST_DB_PASSWORD=shop_test_password
+spring.datasource.url=jdbc:mysql://localhost:3307/shop_test?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+spring.datasource.username=shop_test_user
+spring.datasource.password=shop_test_password
 ```
 
 The auth integration test is:
