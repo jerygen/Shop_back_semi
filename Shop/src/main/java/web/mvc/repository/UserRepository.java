@@ -2,13 +2,15 @@ package web.mvc.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import web.mvc.domain.User;
 
+import java.util.Optional;
+
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    @Query("select m from User m where m.userId=?1")
-    User dupilicateCheck(String id);
 
-    Boolean existsById(String id);
+    boolean existsByUserId(String userId);
 
-    User findById(String id);
+    Optional<User> findByUserId(String userId);
 }

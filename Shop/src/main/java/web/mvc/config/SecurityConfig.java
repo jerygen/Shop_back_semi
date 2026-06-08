@@ -24,6 +24,8 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -46,12 +48,12 @@ public class SecurityConfig {
         http.csrf((auth)->auth.disable());
         http.formLogin(auth->auth.disable());
         http.httpBasic(auth->auth.disable());
+        http.logout(auth->auth.disable());
 
         //경로별 인가 작업
         http.authorizeHttpRequests(auth ->
                 auth
-                        .requestMatchers("/index", "/users", "/users/**").permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/login", "/register").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -66,6 +68,12 @@ public class SecurityConfig {
                 UsernamePasswordAuthenticationFilter.class);
 
         http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+
+        http.exceptionHandling(auth->
+                auth
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler)
+        );
 
         System.out.println("************************");
         SecurityFilterChain chain = http.build();

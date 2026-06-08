@@ -1,4 +1,11 @@
 package web.mvc.service;
 
-public interface CustomerService {
+import web.mvc.domain.Product;
+
+import java.util.List;
+
+public interface CustomerService   {
+
+    List<Product> findProductAll();
+
 }

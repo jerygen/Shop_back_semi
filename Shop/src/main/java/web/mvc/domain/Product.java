@@ -3,30 +3,34 @@ package web.mvc.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 
+@Entity
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userNo;
+    private Long productNo;
 
     @Column(unique = true)
-    private String userId;
-    private String password;
+    private String productId;
+    private String productName;
 
-    @Column(length = 20)
-    private String userName;
+    private String price;
+    private Integer stock;
 
-    private String role;
+    @Column(length = 50)
+    private String description;
 
     @CreationTimestamp
     private Timestamp regDate;
 
+    @UpdateTimestamp
+    private Timestamp updateDate;
 }
