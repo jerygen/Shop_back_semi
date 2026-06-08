@@ -6,8 +6,9 @@
 
 확인 기준:
 
-- 오늘 커밋: `9fd2a4c 프로젝트 공통 및 구조 세팅 + 로그인`
-- 추가 확인한 미커밋 변경: 테스트 DB 설정, 테스트 프로필 적용, 로컬 인증 테스트 문서 수정
+- 오늘 커밋 1: `9fd2a4c 프로젝트 공통 및 구조 세팅 + 로그인`
+- 오늘 커밋 2: `f5d0833 로그인 테스트 및 상품 조회 기능 추가 중`
+- 현재 작업 디렉터리 상태: 이 문서 갱신으로 `docs/2026-06-08-work-summary.md`만 수정됨
 
 ## 추가한 것
 
@@ -38,12 +39,47 @@
 ### 3. 상품 도메인 기초 구조
 
 - `Product` 엔티티와 `ProductRepository`를 추가했다.
+- `Product.price` 타입을 문자열에서 숫자형(`Integer`)으로 조정했다.
 
 추가 이유:
 
 - 쇼핑몰의 핵심 도메인인 상품 기능을 이후 구현할 수 있도록 JPA 엔티티와 저장소의 기본 뼈대를 먼저 마련했다.
+- 가격은 계산, 정렬, 비교가 필요한 값이므로 문자열보다 숫자 타입이 적합하다.
 
-### 4. 로컬/테스트 MySQL 실행 환경
+### 4. 상품 목록 조회 기능 추가 중
+
+- `CustomerController`에 `GET /api/products` 엔드포인트를 추가했다.
+- `CustomerService.findProductAll()`과 `CustomerServiceImpl.findProductAll()`을 추가해 전체 상품 목록 조회 흐름을 만들었다.
+- `ProductReq`, `ProductRes` DTO를 추가했다.
+- 상품 목록이 비어 있을 때 `ProductException(ErrorCode.PRODUCT_NOT_FOUND)`를 던지도록 했다.
+
+추가 이유:
+
+- 고객 화면에서 가장 먼저 필요한 기능은 전체 상품 목록 조회다.
+- 엔티티를 그대로 노출하기보다 DTO를 두면 요청/응답 구조를 API 목적에 맞게 조정할 수 있다.
+- 상품이 없는 경우를 예외로 처리해 클라이언트가 빈 데이터 상황을 명확하게 알 수 있게 하려는 의도다.
+
+### 5. 공통 API 응답 형식 보강
+
+- `ApiResponse.success(T data)`를 추가해 성공 응답의 기본 메시지를 통일했다.
+- `ApiResponse.created(T data)`를 추가해 생성 성공 응답을 표현할 수 있게 했다.
+- `UserController.register()`가 회원가입 성공 시 `ApiResponse.created(user)`를 반환하도록 변경했다.
+
+추가 이유:
+
+- API 응답 메시지를 각 컨트롤러에서 직접 넘기면 응답 형식과 문구가 흔들릴 수 있다.
+- 생성 작업과 일반 조회/처리 성공을 응답 레벨에서 구분하기 위한 기반을 만들었다.
+
+### 6. 사용자 요청 DTO 보강
+
+- `UserReq`에 `userName`, `password` 필드와 `toUser()` 변환 메서드를 추가했다.
+
+추가 이유:
+
+- 컨트롤러나 서비스에서 요청 데이터를 엔티티로 변환하는 흐름을 분리하기 위한 준비 작업이다.
+- 이후 회원가입/로그인 요청 구조를 명확히 다듬을 때 사용할 수 있다.
+
+### 7. 로컬/테스트 MySQL 실행 환경
 
 - `docker-compose.yml`을 추가해 로컬 MySQL 컨테이너를 실행할 수 있게 했다.
 - `docker-compose.test.yml`을 추가해 테스트 전용 MySQL 컨테이너를 별도 포트(`3307`)로 실행할 수 있게 했다.
@@ -54,7 +90,7 @@
 - 개발 DB와 테스트 DB를 분리해야 테스트가 실제 개발 데이터에 영향을 주지 않는다.
 - Docker 기반 DB 실행 방법을 정리해 다른 PC나 EC2에서도 같은 방식으로 환경을 재현할 수 있다.
 
-### 5. 문서와 인프라 초안
+### 8. 문서와 인프라 초안
 
 - 기존 문서와 ERD를 `docs/` 폴더로 정리했다.
 - `docs/mysql-docker.md`에 MySQL Docker 실행 방법을 추가했다.
@@ -97,17 +133,32 @@
 
 ### 3. 테스트 실행 시도 결과
 
-현재 작업 환경에서 `mvnw.cmd test`와 `cmd /c mvnw.cmd test`를 실행해 확인했다.
+현재 작업 환경에서 `mvnw.cmd test`, `cmd /c mvnw.cmd test`, `mvn -version`을 실행해 확인했다.
 
 결과:
 
 - 애플리케이션 테스트까지 진입하지 못하고 Maven wrapper 단계에서 실패했다.
 - 오류 메시지: `Cannot start maven from wrapper`
+- 로컬 `mvn` 명령도 설치되어 있지 않아 Maven 직접 실행이 불가능했다.
 
 현재 판단:
 
 - 테스트 코드 실패라기보다 Maven wrapper 실행 또는 Maven 배포본 준비 문제로 보인다.
 - IntelliJ에서 `UserAuthIntegrationTest.registerLoginLogout()`을 직접 실행하는 방식으로 문서를 조정했다.
+
+### 4. 고객 상품 조회 테스트 추가 중
+
+`CustomerTests`를 추가했다.
+
+작성된 테스트 의도:
+
+- `CustomerService.findProductAll()`을 호출해 전체 상품 목록 조회가 되는지 확인
+- 이후 상품 생성 또는 조회 테스트를 확장하기 위한 테스트 클래스 마련
+
+현재 상태:
+
+- `createProducts()` 테스트는 아직 비어 있다.
+- `getAll()`은 상품 목록 조회를 호출하지만, 현재 서비스 반환 타입과 테스트 변수 타입이 맞지 않아 정리가 필요하다.
 
 ## 수정이 필요했던 것
 
@@ -137,17 +188,17 @@
 변경 내용:
 
 - 로컬 MySQL 접속 정보를 `localhost:3306/shop`, `admin / admin1234`로 맞췄다.
-- `spring.jpa.hibernate.ddl-auto`를 `create`로 변경했다.
+- `spring.jpa.hibernate.ddl-auto`를 `none`으로 변경했다.
 
 수정 이유:
 
-- 로컬 개발 중에는 스키마를 빠르게 재생성하며 회원가입/로그인 흐름을 확인해야 했다.
+- 로컬 개발 DB의 기존 테이블을 Hibernate가 자동으로 생성/삭제하지 않도록 막아 데이터와 스키마를 보존하려는 의도로 보인다.
 - 실제 DB 계정과 애플리케이션 설정이 맞지 않으면 앱 실행 자체가 실패한다.
 
 주의할 점:
 
-- `ddl-auto=create`는 실행 시 테이블을 다시 만들 수 있으므로 운영 또는 보존해야 하는 개발 DB에는 위험하다.
-- 배포나 공동 개발 환경에서는 다시 환경 변수 기반 설정과 `update` 또는 더 보수적인 설정으로 돌리는 것이 좋다.
+- `ddl-auto=none`은 테이블이 이미 존재해야 정상 동작한다.
+- 초기 개발 환경에서는 스키마 생성 SQL 또는 마이그레이션 도구를 별도로 준비해야 한다.
 
 ### 3. 로컬 인증 테스트 문서 수정
 
@@ -178,6 +229,28 @@
 
 - 회원 생성이라는 동작 의미에 맞춰 응답 형식을 더 명확하게 분리하려는 의도로 보인다.
 - 다만 `created` 응답이 실제 HTTP 상태 코드 `201 Created`까지 반영하는지는 추가 확인이 필요하다.
+
+### 5. 상품 조회 DTO/서비스 타입 정리 필요
+
+수정이 필요한 파일:
+
+- `Shop/src/main/java/web/mvc/service/CustomerService.java`
+- `Shop/src/main/java/web/mvc/service/CustomerServiceImpl.java`
+- `Shop/src/main/java/web/mvc/controller/CustomerController.java`
+- `Shop/src/test/java/web/mvc/CustomerTests.java`
+
+현재 상태:
+
+- `CustomerService.findProductAll()`은 `List<ProductReq>`를 반환하도록 선언되어 있다.
+- `CustomerServiceImpl.findProductAll()` 내부에서는 `productRepository.findAll()`로 조회한 `List<Product>`를 그대로 반환하고 있다.
+- `CustomerTests.getAll()`은 `List<Product>`로 결과를 받으려 한다.
+- `ProductRes`가 추가되어 있지만 상품 목록 응답에는 아직 사용되지 않는다.
+
+수정 필요 이유:
+
+- 서비스 선언, 구현체 반환값, 테스트 변수 타입이 서로 맞지 않으면 컴파일이 실패할 수 있다.
+- 조회 API 응답에는 요청 DTO인 `ProductReq`보다 응답 DTO인 `ProductRes`를 사용하는 편이 자연스럽다.
+- `CustomerController`도 `ApiResponse<List<ProductReq>>` 대신 실제 응답 설계에 맞는 타입으로 정리하는 것이 좋다.
 
 ## 추가로 확인하거나 정리하면 좋은 것
 
@@ -217,29 +290,35 @@
 - DB 비밀번호와 JWT Secret은 코드에 고정하지 않는 편이 안전하다.
 - 로컬, 테스트, 운영 설정을 프로필 또는 환경 변수로 분리해야 배포 시 사고를 줄일 수 있다.
 
-### 4. 고객 상품 목록 API 미완성 코드 정리
+### 4. 고객 상품 목록 API 타입 정리
 
-현재 `CustomerController`에 `/api/products` 상품 목록 조회 API를 추가하던 흔적이 있다.
+현재 `CustomerController`에 `/api/products` 상품 목록 조회 API가 추가되어 있다.
 
 확인된 상태:
 
 - `CustomerService` 주입과 `GET /api/products` 엔드포인트 선언이 추가됐다.
-- `return ResponseEntity.ok()` 뒤가 완성되지 않아 현재 상태로는 컴파일이 실패할 수 있다.
+- 응답 타입이 `ApiResponse<List<ProductReq>>`로 되어 있다.
+- 서비스 구현은 실제로 `Product` 엔티티 목록을 조회한다.
 
 수정 필요 이유:
 
-- 미완성 메서드는 Maven/IDE 빌드 단계에서 바로 오류를 만들 수 있다.
-- 상품 목록 조회를 구현하려면 `customerService`에 상품 목록 조회 메서드를 정의하고, 컨트롤러에서 그 결과를 반환하도록 마무리해야 한다.
+- 요청 DTO, 응답 DTO, 엔티티의 역할을 분리해야 API 계약이 명확해진다.
+- 현재 구조에서는 `ProductRes`를 활용해 상품 목록 응답을 만드는 방향이 더 적합해 보인다.
 
-## 현재 남아 있는 변경 파일
+### 5. 테스트 클래스 정리
 
-아래 파일들은 오늘 커밋 이후에도 추가 수정된 상태다.
+현재 `CustomerTests`가 추가됐지만 아직 완성된 테스트라고 보기는 어렵다.
 
-- `Shop/docker-compose.test.yml`
-- `Shop/src/main/java/web/mvc/controller/CustomerController.java`
-- `Shop/src/main/java/web/mvc/controller/UserController.java`
-- `Shop/src/main/resources/application.properties`
-- `Shop/src/test/java/web/mvc/ShopApplicationTests.java`
-- `Shop/src/test/resources/application-test.properties`
-- `docs/local-auth-test.md`
+정리 필요 이유:
+
+- `createProducts()`가 비어 있어 실제 검증을 하지 않는다.
+- `getAll()`은 테스트 프로필을 명시하지 않아 기본 DB 설정을 사용할 수 있다.
+- 테스트 DB와 테스트 데이터 준비 방식이 정해져야 결과가 안정적이다.
+
+## 현재 Git 상태
+
+`f5d0833` 커밋까지 반영되어 있으며, 문서 갱신 전 기준으로는 작업 디렉터리에 추가 미커밋 변경이 없었다.
+
+이 문서를 최신화하면서 현재는 아래 파일만 수정 상태다.
+
 - `docs/2026-06-08-work-summary.md`
