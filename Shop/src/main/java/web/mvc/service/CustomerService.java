@@ -1,12 +1,14 @@
 package web.mvc.service;
 
-import web.mvc.domain.Product;
 import web.mvc.dto.request.ProductReq;
+import web.mvc.dto.response.ProductRes;
 
 import java.util.List;
 
 public interface CustomerService   {
 
-    List<ProductReq> findProductAll();
+    List<ProductRes> findProductAll();
+
+    ProductRes findProduct(ProductReq productReq);
 
 }

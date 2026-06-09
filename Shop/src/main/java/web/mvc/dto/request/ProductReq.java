@@ -1,13 +1,13 @@
 package web.mvc.dto.request;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import web.mvc.domain.Product;
 
 @Getter
 @Setter
-@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductReq {
 
     private String productId;
@@ -16,13 +16,13 @@ public class ProductReq {
     private Integer stock;
     private String description;
 
-    public Product toProduct(ProductReq  productReq) {
+    public Product toProduct() {
         return Product.builder()
-                .productId(productReq.getProductId())
-                .productName(productReq.getProductName())
-                .price(productReq.getPrice())
-                .stock(productReq.getStock())
-                .description(productReq.getDescription())
+                .productId(productId)
+                .productName(productName)
+                .price(price)
+                .stock(stock)
+                .description(description)
         .build();
     }
 
