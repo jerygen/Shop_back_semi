@@ -155,7 +155,7 @@ public class CustomerServiceImpl implements CustomerService{
         int totalAmount = 0;
 
         for(CartItem cartItem : cart.getCartItems()){
-            Product product = productRepository.findById(orderCreateReq.getProductNo()).orElseThrow(() -> new ProductException(ErrorCode.PRODUCT_NOT_FOUND));
+            Product product = cartItem.getProduct();
             int quantity = cartItem.getQuantity();
             if(product.getStock() < quantity){
                 throw new ProductException(ErrorCode.INSUFFICIENT_STOCK);

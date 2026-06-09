@@ -17,4 +17,14 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             order by o.orderDate desc
             """)
     List<Orders> findAllByUserIdWithOrderLines(String userId);
+
+    @Query("""
+            select distinct o
+            from Orders o
+            join fetch o.user
+            left join fetch o.orderLines ol
+            left join fetch ol.product
+            order by o.orderDate desc
+            """)
+    List<Orders> findAllWithUserAndOrderLines();
 }

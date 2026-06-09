@@ -54,9 +54,17 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth ->
                 auth
                         .requestMatchers(HttpMethod.POST, "/login", "/register").permitAll()
+                        .requestMatchers("/ws", "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/orders", "/api/cart/item", "/api/cart/orders").authenticated()
                         .requestMatchers(HttpMethod.GET,"/api/orders/me", "/api/cart/items").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/chat/rooms").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/admin/chat/rooms").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/chat/rooms/*/messages").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/products").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/admin/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/admin/orders", "/api/admin/users").hasRole("ADMIN")
                         .requestMatchers(
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",

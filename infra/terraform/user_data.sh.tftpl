@@ -2,7 +2,7 @@
 set -euo pipefail
 
 dnf update -y
-dnf install -y docker
+dnf install -y docker docker-compose-plugin
 
 systemctl enable docker
 systemctl start docker
@@ -10,17 +10,47 @@ systemctl start docker
 mkdir -p /opt/shop
 
 cat > /opt/shop/.env <<'ENV'
+APP_IMAGE=${app_image}
+APP_BIND_HOST=0.0.0.0
+APP_PORT=${app_port}
+
 MYSQL_BIND_HOST=${mysql_bind_host}
 MYSQL_DATABASE=${mysql_database}
 MYSQL_USER=${mysql_user}
 MYSQL_PASSWORD=${mysql_password}
 MYSQL_ROOT_PASSWORD=${mysql_root_password}
+
+DB_URL=jdbc:mysql://mysql:3306/${mysql_database}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+DB_USERNAME=${mysql_user}
+DB_PASSWORD=${mysql_password}
+
+JPA_DDL_AUTO=${jpa_ddl_auto}
+JPA_SHOW_SQL=${jpa_show_sql}
+JWT_SECRET=${jwt_secret}
 ENV
 
 chmod 600 /opt/shop/.env
 
 cat > /opt/shop/docker-compose.yml <<'COMPOSE'
 services:
+  app:
+    image: $${APP_IMAGE}
+    container_name: shop-app
+    restart: unless-stopped
+    ports:
+      - "$${APP_BIND_HOST:-0.0.0.0}:$${APP_PORT:-9000}:9000"
+    environment:
+      SERVER_PORT: 9000
+      DB_URL: "$${DB_URL}"
+      DB_USERNAME: "$${DB_USERNAME}"
+      DB_PASSWORD: "$${DB_PASSWORD}"
+      JPA_DDL_AUTO: "$${JPA_DDL_AUTO:-update}"
+      JPA_SHOW_SQL: "$${JPA_SHOW_SQL:-false}"
+      JWT_SECRET: "$${JWT_SECRET}"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
   mysql:
     image: mysql:8.4
     container_name: shop-mysql
@@ -28,10 +58,10 @@ services:
     ports:
       - "$${MYSQL_BIND_HOST:-127.0.0.1}:3306:3306"
     environment:
-      MYSQL_DATABASE: $${MYSQL_DATABASE:-shop}
-      MYSQL_USER: $${MYSQL_USER:-shop_user}
-      MYSQL_PASSWORD: $${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: $${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: "$${MYSQL_DATABASE:-shop}"
+      MYSQL_USER: "$${MYSQL_USER:-admin}"
+      MYSQL_PASSWORD: "$${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "$${MYSQL_ROOT_PASSWORD}"
       TZ: Asia/Seoul
     command:
       - --character-set-server=utf8mb4
@@ -48,4 +78,13 @@ volumes:
   mysql_data:
 COMPOSE
 
-docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d
+chown -R ec2-user:ec2-user /opt/shop
+usermod -aG docker ec2-user || true
+
+docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d mysql
+
+if docker image inspect "${app_image}" >/dev/null 2>&1 || docker pull "${app_image}"; then
+  docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d app
+else
+  echo "Application image ${app_image} is not available yet. MySQL is running; deploy the app image with CI/CD later."
+fi

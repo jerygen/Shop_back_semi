@@ -6,6 +6,7 @@ import web.mvc.domain.Product;
 @Getter
 @AllArgsConstructor
 @ToString
+@Builder
 public class ProductRes {
     private Long productNo;
     private String productName;

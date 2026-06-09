@@ -3,10 +3,14 @@ project_name = "shop"
 instance_type = "t3.micro"
 
 # Terraform creates this EC2 key pair and writes generated/<key_pair_name>.pem locally.
-key_pair_name = "shop-mysql"
+key_pair_name = "shop"
 
 # Use your current public IP with /32.
 allowed_ssh_cidr = "YOUR_PUBLIC_IP/32"
+
+app_image = "ghcr.io/YOUR_GITHUB_OWNER/YOUR_REPOSITORY:latest"
+app_port = 9000
+allowed_app_cidr = "0.0.0.0/0"
 
 # Keep false for safer EC2 setup. Use SSH tunneling for DB access.
 expose_mysql = false
@@ -15,6 +19,10 @@ allowed_mysql_cidr = "YOUR_PUBLIC_IP/32"
 root_volume_size = 30
 
 mysql_database = "shop"
-mysql_user = "shop_user"
-mysql_password = "change_me_shop_password"
-mysql_root_password = "change_me_root_password"
+mysql_user = "admin"
+mysql_password = "admin1234"
+mysql_root_password = "admin1234"
+
+jpa_ddl_auto = "update"
+jpa_show_sql = false
+jwt_secret = "change_me_to_a_very_long_random_secret"

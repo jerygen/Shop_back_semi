@@ -29,14 +29,14 @@ data "aws_ami" "amazon_linux_2023" {
   }
 }
 
-resource "tls_private_key" "mysql" {
+resource "tls_private_key" "shop" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "aws_key_pair" "mysql" {
+resource "aws_key_pair" "shop" {
   key_name   = var.key_pair_name
-  public_key = tls_private_key.mysql.public_key_openssh
+  public_key = tls_private_key.shop.public_key_openssh
 
   tags = {
     Name    = var.key_pair_name
@@ -44,16 +44,16 @@ resource "aws_key_pair" "mysql" {
   }
 }
 
-resource "local_sensitive_file" "mysql_private_key" {
-  content              = tls_private_key.mysql.private_key_pem
+resource "local_sensitive_file" "shop_private_key" {
+  content              = tls_private_key.shop.private_key_pem
   filename             = "${path.module}/generated/${var.key_pair_name}.pem"
   directory_permission = "0700"
   file_permission      = "0600"
 }
 
-resource "aws_security_group" "mysql_ec2" {
-  name        = "${var.project_name}-mysql-ec2-sg"
-  description = "Security group for ${var.project_name} MySQL EC2"
+resource "aws_security_group" "shop_ec2" {
+  name        = "${var.project_name}-ec2-sg"
+  description = "Security group for ${var.project_name} application EC2"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
@@ -62,6 +62,14 @@ resource "aws_security_group" "mysql_ec2" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.allowed_ssh_cidr]
+  }
+
+  ingress {
+    description = "Spring Boot application"
+    from_port   = var.app_port
+    to_port     = var.app_port
+    protocol    = "tcp"
+    cidr_blocks = [var.allowed_app_cidr]
   }
 
   dynamic "ingress" {
@@ -85,21 +93,26 @@ resource "aws_security_group" "mysql_ec2" {
   }
 
   tags = {
-    Name    = "${var.project_name}-mysql-ec2-sg"
+    Name    = "${var.project_name}-ec2-sg"
     Project = var.project_name
   }
 }
 
-resource "aws_instance" "mysql" {
+resource "aws_instance" "shop" {
   ami                         = data.aws_ami.amazon_linux_2023.id
   instance_type               = var.instance_type
   subnet_id                   = data.aws_subnets.default.ids[0]
-  vpc_security_group_ids      = [aws_security_group.mysql_ec2.id]
+  vpc_security_group_ids      = [aws_security_group.shop_ec2.id]
   associate_public_ip_address = true
-  key_name                    = aws_key_pair.mysql.key_name
+  key_name                    = aws_key_pair.shop.key_name
 
   user_data_replace_on_change = true
   user_data = templatefile("${path.module}/user_data.sh.tftpl", {
+    app_image           = var.app_image
+    app_port            = var.app_port
+    jwt_secret          = var.jwt_secret
+    jpa_ddl_auto        = var.jpa_ddl_auto
+    jpa_show_sql        = var.jpa_show_sql
     mysql_database      = var.mysql_database
     mysql_user          = var.mysql_user
     mysql_password      = var.mysql_password
@@ -115,7 +128,7 @@ resource "aws_instance" "mysql" {
   }
 
   tags = {
-    Name    = "${var.project_name}-mysql"
+    Name    = var.project_name
     Project = var.project_name
   }
 }
