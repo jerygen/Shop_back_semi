@@ -4,10 +4,8 @@ import lombok.*;
 import web.mvc.domain.Product;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@ToString
 public class ProductRes {
     private Long productNo;
     private String productName;

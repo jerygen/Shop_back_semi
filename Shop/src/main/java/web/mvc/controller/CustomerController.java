@@ -1,14 +1,14 @@
 package web.mvc.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import web.mvc.dto.request.ProductReq;
-import web.mvc.dto.response.ApiResponse;
-import web.mvc.dto.response.ProductRes;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import web.mvc.dto.request.CartAddReq;
+import web.mvc.dto.request.OrderCreateReq;
+import web.mvc.dto.response.*;
+import web.mvc.security.CustomUserDetails;
 import web.mvc.service.CustomerService;
 
 import java.util.List;
@@ -25,13 +25,44 @@ public class CustomerController {
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 
-    @GetMapping("/products/{productId}")
-    public ResponseEntity<ApiResponse<ProductRes>> getProduct(@PathVariable String productId) {
-        ProductReq productReq = new ProductReq();
-        productReq.setProductId(productId);
-
-        ProductRes product = customerService.findProduct(productReq);
+    @GetMapping("/products/{productNo}")
+    public ResponseEntity<ApiResponse<ProductRes>> getProduct(@PathVariable Long productNo) {
+        ProductRes product = customerService.findProductByNo(productNo);
         return ResponseEntity.ok(ApiResponse.success(product));
     }
 
+    @PostMapping("/orders")
+    public ResponseEntity<ApiResponse<OrderRes>> createOrder(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody OrderCreateReq orderCreateReq) {
+        String userId = userDetails.getUser().getUserId();
+        OrderRes orderRes = customerService.createOrder(userId, orderCreateReq);
+        return ResponseEntity.ok(ApiResponse.success(orderRes));
+    }
+
+    @GetMapping("/orders/me")
+    public ResponseEntity<ApiResponse<List<OrderRes>>> getOrders(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        String userId = userDetails.getUser().getUserId();
+        List<OrderRes> orders = customerService.findOrdersByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(orders));
+    }
+
+    @PostMapping("/cart/item")
+    public ResponseEntity<ApiResponse<CartItemRes>> addIntoCart(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody CartAddReq cartAddReq) {
+        String userId = userDetails.getUser().getUserId();
+        CartItemRes cartItemRes = customerService.addIntoCart(userId, cartAddReq);
+        return ResponseEntity.ok(ApiResponse.success(cartItemRes));
+    }
+
+    @GetMapping("/cart/items")
+    public ResponseEntity<ApiResponse<CartRes>> getCartItems(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        String userId = userDetails.getUser().getUserId();
+        CartRes cartRes = customerService.findCartByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(cartRes));
+    }
+
+    @PostMapping("/cart/orders")
+    public ResponseEntity<ApiResponse<OrderRes>> createCartOrders(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody OrderCreateReq orderCreateReq) {
+        String userId = userDetails.getUser().getUserId();
+        OrderRes orderRes = customerService.createCartOrders(userId, orderCreateReq);
+        return ResponseEntity.ok(ApiResponse.success(orderRes));
+    }
 }

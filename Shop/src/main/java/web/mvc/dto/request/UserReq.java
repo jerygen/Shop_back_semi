@@ -18,5 +18,4 @@ public class UserReq {
                 .password(userReq.getPassword())
                 .build();
     }
-
 }
