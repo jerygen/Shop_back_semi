@@ -239,7 +239,9 @@ Success! The configuration is valid.
 
 ## Updated GitHub Actions Flow
 
-The deployment workflow is:
+The deployment workflow initially assumed that Terraform `user_data` had already created `/opt/shop/.env` and `/opt/shop/docker-compose.yml`.
+
+The workflow was:
 
 1. Run tests using a MySQL service container.
 2. Build the Spring Boot Docker image.
@@ -250,8 +252,7 @@ The deployment workflow is:
 5. Update `/opt/shop/.env` with the newly built image tag.
 6. Pull the new app image.
 7. Restart only the app container.
-8. Print Docker Compose status.
-9. Prune unused images.
+8. Check whether the application responds inside EC2.
 
 Because the EC2 OS is now Ubuntu, the default SSH user in `deploy.yml` was changed from:
 
@@ -267,9 +268,222 @@ ubuntu
 
 The `ubuntu` user is added to the `docker` group during `user_data`, so the deploy script can run Docker without `sudo`.
 
+Later, the deployment target was changed from Terraform-created EC2 to a manually created EC2 instance. Because of that, the workflow was updated again to remove runtime dependency on Terraform `user_data`.
+
+The final GitHub Actions deployment step is responsible for:
+
+1. Checking whether Docker is installed on the EC2 host.
+2. Installing Docker if it is missing.
+3. Checking whether Docker Compose v2 is available.
+4. Installing Docker Compose if it is missing.
+5. Creating `/opt/shop`.
+6. Creating `/opt/shop/.env`.
+7. Creating `/opt/shop/docker-compose.yml`.
+8. Logging in to GHCR when `GHCR_USERNAME` and `GHCR_TOKEN` are provided.
+9. Pulling the app image from GHCR.
+10. Running MySQL and the Spring Boot app with Docker Compose.
+11. Checking `http://127.0.0.1:9000/swagger` from inside EC2.
+12. Printing `shop-app` logs when the health check fails.
+
+This made the deployment independent of Terraform. A manually created EC2 instance only needs SSH access and a compatible Ubuntu environment.
+
+## Manual EC2 Deployment Model
+
+The final direction was to create the EC2 instance manually instead of continuing to rely on Terraform for provisioning.
+
+Required GitHub Actions secrets for manual EC2 deployment:
+
+```text
+EC2_HOST
+EC2_USER
+EC2_SSH_KEY
+```
+
+Recommended secrets for stable application runtime:
+
+```text
+MYSQL_PASSWORD
+MYSQL_ROOT_PASSWORD
+JWT_SECRET
+```
+
+Optional admin bootstrap secrets:
+
+```text
+ADMIN_USER_ID
+ADMIN_PASSWORD
+```
+
+Optional variable:
+
+```text
+ADMIN_USER_NAME
+```
+
+If GHCR package access is private:
+
+```text
+GHCR_USERNAME
+GHCR_TOKEN
+```
+
+The manual EC2 security group should allow:
+
+```text
+22    SSH
+80    HTTP
+443   HTTPS or SSH fallback
+9000  Spring Boot application
+```
+
+MySQL port `3306` should not be opened publicly. In Docker Compose it is bound only to:
+
+```text
+127.0.0.1:3306
+```
+
+## Docker Image Pull Appeared to Hang
+
+At one point GitHub Actions appeared to hang at:
+
+```text
+Pulling application image
+```
+
+This indicated that SSH into EC2 had already succeeded. The deployment was not stuck before connection; it had reached the remote Docker image pull step.
+
+Possible causes considered:
+
+- GHCR image pull was slow.
+- GHCR package access required credentials.
+- Docker Compose progress output made the command appear idle.
+
+The workflow was briefly changed to use direct `docker pull`, then reverted at request. The key lesson was that logs should identify which remote command is running so that SSH issues and Docker issues are not confused.
+
+## App Container Started but Spring Boot Was Not Ready
+
+Another deployment reached:
+
+```text
+Container shop-mysql Healthy
+Container shop-app Started
+Checking application from EC2
+curl: (56) Recv failure: Connection reset by peer
+```
+
+Interpretation:
+
+- SSH succeeded.
+- Docker succeeded.
+- MySQL became healthy.
+- The Spring Boot container started.
+- The HTTP check failed because Spring Boot was not ready yet or the app exited shortly after startup.
+
+The deployment script was updated to retry the local health check:
+
+```text
+http://127.0.0.1:9000/swagger
+```
+
+If the app still does not respond, the script prints:
+
+```bash
+docker logs shop-app --tail=100
+```
+
+This turns a vague "browser does not open" problem into an application log problem.
+
+## EC2 Resource Pressure
+
+While using `t3.micro`, CPU and memory pressure were suspected because the instance was running both:
+
+- Spring Boot application container.
+- MySQL 8.4 container.
+
+This can be tight on a free-tier instance, especially during image pull, container startup, and MySQL initialization.
+
+Commands recommended for checking resource pressure:
+
+```bash
+free -h
+df -h
+docker stats --no-stream
+sudo dmesg -T | grep -i -E "killed process|out of memory|oom"
+```
+
+Recommended mitigation for `t3.micro`:
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+MySQL memory can also be reduced with options such as:
+
+```yaml
+command:
+  - --character-set-server=utf8mb4
+  - --collation-server=utf8mb4_unicode_ci
+  - --innodb-buffer-pool-size=128M
+  - --max-connections=30
+```
+
+## External Browser Access
+
+Even after deployment succeeded, browser access failed until the EC2 external network path and security group were corrected.
+
+Final application URL format:
+
+```text
+http://<EC2_PUBLIC_IP>:9000/swagger
+```
+
+Important distinction:
+
+- If GitHub Actions reports that `http://127.0.0.1:9000/swagger` works from EC2, the app is alive inside the instance.
+- If the browser cannot open `http://<EC2_PUBLIC_IP>:9000/swagger`, the remaining issue is external access: public IP, security group, NACL, route table, or local network path.
+
+The final browser access worked after the relevant EC2 inbound access was opened.
+
+## Admin Login Issue
+
+After the application became accessible, admin login failed.
+
+The admin account is not hard-coded in the application. It is created by:
+
+```text
+AdminAccountInitializer
+```
+
+The initializer only creates an admin user when both environment variables are provided:
+
+```text
+ADMIN_USER_ID
+ADMIN_PASSWORD
+```
+
+If either value is missing, startup logs:
+
+```text
+Admin account initialization skipped. ADMIN_USER_ID and ADMIN_PASSWORD are not configured.
+```
+
+At that time, GitHub Secrets only contained EC2 connection values. Therefore, no admin account had been bootstrapped.
+
+Resolution:
+
+- Add `ADMIN_USER_ID` and `ADMIN_PASSWORD` to GitHub Secrets.
+- Optionally add `ADMIN_USER_NAME`.
+- Redeploy.
+
+If a user with the same `ADMIN_USER_ID` already exists, the initializer skips creation and does not reset the password. In that case, update the existing DB row manually or choose a new admin ID.
+
 ## Secrets to Update After New Apply
 
-After `terraform apply`, update GitHub Actions secrets:
+When using Terraform-created EC2, update GitHub Actions secrets after `terraform apply`:
 
 ```text
 EC2_HOST = terraform output public_ip
@@ -286,32 +500,37 @@ GHCR_TOKEN
 
 The token should have package read permission.
 
+When using manually created EC2, set `EC2_HOST` to the manually created instance's public IPv4 address.
+
 ## Recommended Next Steps
 
-1. Review `infra/terraform/terraform.tfvars`.
-2. Run:
+For the final manual EC2 flow:
 
-```powershell
-cd C:\Projects\Shop\infra\terraform
-terraform plan
-terraform apply
+1. Create an Ubuntu EC2 instance manually.
+2. Open required inbound ports in the EC2 security group:
+
+```text
+22
+80
+443
+9000
 ```
 
-3. Check outputs:
+3. Add GitHub Actions secrets:
 
-```powershell
-terraform output public_ip
-terraform output ssh_command
-terraform output app_url
+```text
+EC2_HOST
+EC2_USER
+EC2_SSH_KEY
+MYSQL_PASSWORD
+MYSQL_ROOT_PASSWORD
+JWT_SECRET
+ADMIN_USER_ID
+ADMIN_PASSWORD
 ```
 
-4. Test SSH:
-
-```powershell
-ssh -i ./generated/shop.pem ubuntu@<public-ip>
-```
-
-5. Check Docker on EC2:
+4. Run GitHub Actions deployment.
+5. Check Docker on EC2 if troubleshooting is needed:
 
 ```bash
 groups
@@ -319,13 +538,13 @@ docker ps
 docker compose version
 ```
 
-6. Update GitHub Actions secrets.
-7. Run GitHub Actions deployment.
-8. Test:
+6. Test:
 
 ```text
 http://<public-ip>:9000/swagger
 ```
+
+7. Log in with the admin credentials provided through `ADMIN_USER_ID` and `ADMIN_PASSWORD`.
 
 ## Lessons Learned
 
@@ -337,3 +556,7 @@ http://<public-ip>:9000/swagger
 - Default VPC and default subnet dependencies make troubleshooting harder.
 - For learning and small deployments, explicitly creating VPC, subnet, route table, Internet Gateway, and security group is easier to reason about.
 - MySQL should not be exposed through the EC2 security group when it only serves the app on the same host.
+- When moving away from Terraform provisioning, the deployment workflow must create the server-side `.env` and `docker-compose.yml` itself.
+- `Container Started` does not prove Spring Boot is ready; check the application endpoint from inside EC2.
+- `t3.micro` can be too tight for Spring Boot plus MySQL; watch for OOM and consider swap.
+- Admin login depends on `ADMIN_USER_ID` and `ADMIN_PASSWORD`; no secret means no bootstrap admin account.
