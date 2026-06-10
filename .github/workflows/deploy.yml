@@ -145,7 +145,19 @@ jobs:
             echo "Starting application container"
             docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d --remove-orphans app
 
-            echo "Deployment status"
-            docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml ps
+            echo "Checking application from EC2"
+            for i in 1 2 3 4 5 6; do
+              if curl -fsS http://127.0.0.1:9000/swagger >/dev/null; then
+                echo "Application is responding on localhost:9000"
+                break
+              fi
+              echo "Application is not ready yet; retrying in 10 seconds"
+              sleep 10
+            done
+
+            curl -fsS http://127.0.0.1:9000/swagger >/dev/null || {
+              docker logs shop-app --tail=100
+              exit 1
+            }
 
             echo "Deployment completed"
