@@ -1,21 +1,14 @@
-data "aws_vpc" "default" {
-  default = true
+data "aws_availability_zones" "available" {
+  state = "available"
 }
 
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
-data "aws_ami" "amazon_linux_2023" {
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"]
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-kernel-6.1-x86_64"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
   filter {
@@ -29,13 +22,59 @@ data "aws_ami" "amazon_linux_2023" {
   }
 }
 
-data "aws_ec2_managed_prefix_list" "ec2_instance_connect" {
-  count = var.enable_ec2_instance_connect ? 1 : 0
-  name  = "com.amazonaws.${var.aws_region}.ec2-instance-connect"
-}
-
 locals {
   allowed_ssh_cidrs = length(var.allowed_ssh_cidrs) > 0 ? var.allowed_ssh_cidrs : [var.allowed_ssh_cidr]
+}
+
+resource "aws_vpc" "shop" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name    = "${var.project_name}-vpc"
+    Project = var.project_name
+  }
+}
+
+resource "aws_internet_gateway" "shop" {
+  vpc_id = aws_vpc.shop.id
+
+  tags = {
+    Name    = "${var.project_name}-igw"
+    Project = var.project_name
+  }
+}
+
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.shop.id
+  cidr_block              = var.public_subnet_cidr
+  availability_zone       = data.aws_availability_zones.available.names[0]
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name    = "${var.project_name}-public-subnet"
+    Project = var.project_name
+  }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.shop.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.shop.id
+  }
+
+  tags = {
+    Name    = "${var.project_name}-public-rt"
+    Project = var.project_name
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
 }
 
 resource "tls_private_key" "shop" {
@@ -62,8 +101,8 @@ resource "local_sensitive_file" "shop_private_key" {
 
 resource "aws_security_group" "shop_ec2" {
   name        = "${var.project_name}-ec2-sg"
-  description = "Security group for ${var.project_name} application EC2"
-  vpc_id      = data.aws_vpc.default.id
+  description = "SSH and Spring Boot access for ${var.project_name}"
+  vpc_id      = aws_vpc.shop.id
 
   ingress {
     description = "SSH"
@@ -71,9 +110,6 @@ resource "aws_security_group" "shop_ec2" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = local.allowed_ssh_cidrs
-    prefix_list_ids = var.enable_ec2_instance_connect ? [
-      data.aws_ec2_managed_prefix_list.ec2_instance_connect[0].id
-    ] : []
   }
 
   ingress {
@@ -82,18 +118,6 @@ resource "aws_security_group" "shop_ec2" {
     to_port     = var.app_port
     protocol    = "tcp"
     cidr_blocks = [var.allowed_app_cidr]
-  }
-
-  dynamic "ingress" {
-    for_each = var.expose_mysql ? [1] : []
-
-    content {
-      description = "MySQL"
-      from_port   = 3306
-      to_port     = 3306
-      protocol    = "tcp"
-      cidr_blocks = [var.allowed_mysql_cidr]
-    }
   }
 
   egress {
@@ -111,9 +135,9 @@ resource "aws_security_group" "shop_ec2" {
 }
 
 resource "aws_instance" "shop" {
-  ami                         = data.aws_ami.amazon_linux_2023.id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
-  subnet_id                   = data.aws_subnets.default.ids[0]
+  subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.shop_ec2.id]
   associate_public_ip_address = true
   key_name                    = aws_key_pair.shop.key_name
@@ -129,7 +153,6 @@ resource "aws_instance" "shop" {
     mysql_user          = var.mysql_user
     mysql_password      = var.mysql_password
     mysql_root_password = var.mysql_root_password
-    mysql_bind_host     = var.expose_mysql ? "0.0.0.0" : "127.0.0.1"
     admin_user_id       = var.admin_user_id
     admin_password      = var.admin_password
     admin_user_name     = var.admin_user_name
@@ -139,7 +162,7 @@ resource "aws_instance" "shop" {
     volume_size           = var.root_volume_size
     volume_type           = "gp3"
     encrypted             = true
-    delete_on_termination = false
+    delete_on_termination = true
   }
 
   tags = {

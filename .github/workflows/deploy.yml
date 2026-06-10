@@ -119,39 +119,25 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER || 'ec2-user' }}
+          username: ${{ secrets.EC2_USER || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
           timeout: 30s
           command_timeout: 5m
           script: |
-            set -ex
-            date
-            docker --version
-            docker compose version
+            set -e
             cd /opt/shop
-            ls -la
 
             if [ -n "${{ secrets.GHCR_USERNAME }}" ] && [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
-              echo "Logging in to GHCR"
               echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             fi
 
-            echo "Updating APP_IMAGE in .env"
             if grep -q '^APP_IMAGE=' .env; then
               sed -i 's|^APP_IMAGE=.*|APP_IMAGE=${{ needs.build.outputs.image }}|' .env
             else
               printf '\nAPP_IMAGE=${{ needs.build.outputs.image }}\n' >> .env
             fi
 
-            echo "Current compose status"
-            docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml ps
-
-            echo "Pulling application image"
             docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml pull app
-
-            echo "Starting application container"
             docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d app
-
-            echo "Final compose status"
             docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml ps
             docker image prune -f

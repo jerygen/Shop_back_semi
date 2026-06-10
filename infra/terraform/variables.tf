@@ -16,6 +16,28 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "vpc_cidr" {
+  description = "CIDR block for the application VPC."
+  type        = string
+  default     = "10.20.0.0/16"
+
+  validation {
+    condition     = can(cidrhost(var.vpc_cidr, 0))
+    error_message = "vpc_cidr must be a valid CIDR block."
+  }
+}
+
+variable "public_subnet_cidr" {
+  description = "CIDR block for the public subnet that hosts the EC2 instance."
+  type        = string
+  default     = "10.20.1.0/24"
+
+  validation {
+    condition     = can(cidrhost(var.public_subnet_cidr, 0))
+    error_message = "public_subnet_cidr must be a valid CIDR block."
+  }
+}
+
 variable "key_pair_name" {
   description = "EC2 key pair name to create for SSH access."
   type        = string
@@ -23,7 +45,7 @@ variable "key_pair_name" {
 }
 
 variable "allowed_ssh_cidr" {
-  description = "CIDR allowed to connect over SSH. Use your public IP with /32. Kept for simple single-IP setups."
+  description = "CIDR allowed to connect over SSH. Use your public IP with /32, or 0.0.0.0/0 for temporary broad access."
   type        = string
 
   validation {
@@ -40,29 +62,6 @@ variable "allowed_ssh_cidrs" {
   validation {
     condition     = alltrue([for cidr in var.allowed_ssh_cidrs : can(cidrhost(cidr, 0))])
     error_message = "Every allowed_ssh_cidrs value must be a valid CIDR block, for example 203.0.113.10/32."
-  }
-}
-
-variable "enable_ec2_instance_connect" {
-  description = "Allow AWS EC2 Instance Connect from the AWS Console by adding the regional AWS-managed prefix list to SSH ingress."
-  type        = bool
-  default     = true
-}
-
-variable "expose_mysql" {
-  description = "Expose MySQL port 3306 through the EC2 security group. Keep false unless you know you need it."
-  type        = bool
-  default     = false
-}
-
-variable "allowed_mysql_cidr" {
-  description = "CIDR allowed to connect to MySQL when expose_mysql is true."
-  type        = string
-  default     = "127.0.0.1/32"
-
-  validation {
-    condition     = can(cidrhost(var.allowed_mysql_cidr, 0))
-    error_message = "allowed_mysql_cidr must be a valid CIDR block, for example 203.0.113.10/32."
   }
 }
 

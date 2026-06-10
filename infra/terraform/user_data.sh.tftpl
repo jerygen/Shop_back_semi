@@ -1,8 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-dnf update -y
-dnf install -y docker
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update -y
+apt-get install -y ca-certificates curl docker.io
 
 mkdir -p /usr/local/lib/docker/cli-plugins
 curl -SL "https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64" \
@@ -19,7 +21,6 @@ APP_IMAGE=${app_image}
 APP_BIND_HOST=0.0.0.0
 APP_PORT=${app_port}
 
-MYSQL_BIND_HOST=${mysql_bind_host}
 MYSQL_DATABASE=${mysql_database}
 MYSQL_USER=${mysql_user}
 MYSQL_PASSWORD=${mysql_password}
@@ -68,7 +69,7 @@ services:
     container_name: shop-mysql
     restart: unless-stopped
     ports:
-      - "$${MYSQL_BIND_HOST:-127.0.0.1}:3306:3306"
+      - "127.0.0.1:3306:3306"
     environment:
       MYSQL_DATABASE: "$${MYSQL_DATABASE:-shop}"
       MYSQL_USER: "$${MYSQL_USER:-admin}"
@@ -90,8 +91,8 @@ volumes:
   mysql_data:
 COMPOSE
 
-chown -R ec2-user:ec2-user /opt/shop
-usermod -aG docker ec2-user || true
+chown -R ubuntu:ubuntu /opt/shop
+usermod -aG docker ubuntu || true
 
 docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d mysql
 

@@ -1,32 +1,32 @@
-aws_region = "ap-northeast-2"
-project_name = "shop"
+aws_region    = "ap-northeast-2"
+project_name  = "shop"
 instance_type = "t3.micro"
+
+vpc_cidr           = "10.20.0.0/16"
+public_subnet_cidr = "10.20.1.0/24"
 
 # Terraform creates this EC2 key pair and writes generated/<key_pair_name>.pem locally.
 key_pair_name = "shop"
 
-# Use your current public IP with /32.
+# Use your current public IP with /32. Use 0.0.0.0/0 only for temporary broad SSH access.
 allowed_ssh_cidr = "YOUR_PUBLIC_IP/32"
-# Use this instead when you want to allow multiple client networks, for example home and school.
 # allowed_ssh_cidrs = ["YOUR_PUBLIC_IP/32", "ANOTHER_PUBLIC_IP/32"]
-# Allows AWS Console EC2 Instance Connect.
-enable_ec2_instance_connect = true
 
-app_image = "ghcr.io/YOUR_GITHUB_OWNER/YOUR_REPOSITORY:latest"
-app_port = 9000
+app_image        = "ghcr.io/YOUR_GITHUB_OWNER/YOUR_REPOSITORY:latest"
+app_port         = 9000
 allowed_app_cidr = "0.0.0.0/0"
-
-# Keep false for safer EC2 setup. Use SSH tunneling for DB access.
-expose_mysql = false
-allowed_mysql_cidr = "YOUR_PUBLIC_IP/32"
 
 root_volume_size = 30
 
-mysql_database = "shop"
-mysql_user = "admin"
-mysql_password = "admin1234"
-mysql_root_password = "admin1234"
+mysql_database      = "shop"
+mysql_user          = "admin"
+mysql_password      = "change_me_mysql_password"
+mysql_root_password = "change_me_mysql_root_password"
 
 jpa_ddl_auto = "update"
 jpa_show_sql = false
-jwt_secret = "change_me_to_a_very_long_random_secret"
+jwt_secret   = "change_me_to_a_very_long_random_secret"
+
+admin_user_id   = ""
+admin_password  = ""
+admin_user_name = "Administrator"

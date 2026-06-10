@@ -15,12 +15,12 @@ output "app_url" {
 
 output "ssh_command" {
   description = "SSH command for the EC2 instance."
-  value       = "ssh -i ${local_sensitive_file.shop_private_key.filename} ec2-user@${aws_instance.shop.public_ip}"
+  value       = "ssh -i ${local_sensitive_file.shop_private_key.filename} ubuntu@${aws_instance.shop.public_ip}"
 }
 
 output "ssh_tunnel_command" {
   description = "SSH tunnel command for local MySQL access."
-  value       = "ssh -i ${local_sensitive_file.shop_private_key.filename} -L 3306:127.0.0.1:3306 ec2-user@${aws_instance.shop.public_ip}"
+  value       = "ssh -i ${local_sensitive_file.shop_private_key.filename} -L 3306:127.0.0.1:3306 ubuntu@${aws_instance.shop.public_ip}"
 }
 
 output "private_key_path" {
