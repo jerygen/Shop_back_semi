@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -34,9 +35,14 @@ class UserAuthIntegrationTest {
         String userId = "testuser-" + System.currentTimeMillis();
 
         mockMvc.perform(post("/register")
-                        .param("userId", userId)
-                        .param("password", "password1234")
-                        .param("userName", "Test User"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": "%s",
+                                  "password": "password1234",
+                                  "userName": "Test User"
+                                }
+                                """.formatted(userId)))
                 .andExpect(status().isOk());
 
         MvcResult loginResult = mockMvc.perform(post("/login")
