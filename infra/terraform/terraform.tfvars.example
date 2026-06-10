@@ -7,6 +7,10 @@ key_pair_name = "shop"
 
 # Use your current public IP with /32.
 allowed_ssh_cidr = "YOUR_PUBLIC_IP/32"
+# Use this instead when you want to allow multiple client networks, for example home and school.
+# allowed_ssh_cidrs = ["YOUR_PUBLIC_IP/32", "ANOTHER_PUBLIC_IP/32"]
+# Allows AWS Console EC2 Instance Connect.
+enable_ec2_instance_connect = true
 
 app_image = "ghcr.io/YOUR_GITHUB_OWNER/YOUR_REPOSITORY:latest"
 app_port = 9000

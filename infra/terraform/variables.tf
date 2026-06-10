@@ -23,13 +23,30 @@ variable "key_pair_name" {
 }
 
 variable "allowed_ssh_cidr" {
-  description = "CIDR allowed to connect over SSH. Use your public IP with /32."
+  description = "CIDR allowed to connect over SSH. Use your public IP with /32. Kept for simple single-IP setups."
   type        = string
 
   validation {
     condition     = can(cidrhost(var.allowed_ssh_cidr, 0))
     error_message = "allowed_ssh_cidr must be a valid CIDR block, for example 203.0.113.10/32."
   }
+}
+
+variable "allowed_ssh_cidrs" {
+  description = "Additional CIDR blocks allowed to connect over SSH. When set, this replaces allowed_ssh_cidr."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = alltrue([for cidr in var.allowed_ssh_cidrs : can(cidrhost(cidr, 0))])
+    error_message = "Every allowed_ssh_cidrs value must be a valid CIDR block, for example 203.0.113.10/32."
+  }
+}
+
+variable "enable_ec2_instance_connect" {
+  description = "Allow AWS EC2 Instance Connect from the AWS Console by adding the regional AWS-managed prefix list to SSH ingress."
+  type        = bool
+  default     = true
 }
 
 variable "expose_mysql" {

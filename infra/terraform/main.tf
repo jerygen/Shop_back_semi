@@ -29,6 +29,15 @@ data "aws_ami" "amazon_linux_2023" {
   }
 }
 
+data "aws_ec2_managed_prefix_list" "ec2_instance_connect" {
+  count = var.enable_ec2_instance_connect ? 1 : 0
+  name  = "com.amazonaws.${var.aws_region}.ec2-instance-connect"
+}
+
+locals {
+  allowed_ssh_cidrs = length(var.allowed_ssh_cidrs) > 0 ? var.allowed_ssh_cidrs : [var.allowed_ssh_cidr]
+}
+
 resource "tls_private_key" "shop" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -61,7 +70,10 @@ resource "aws_security_group" "shop_ec2" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.allowed_ssh_cidr]
+    cidr_blocks = local.allowed_ssh_cidrs
+    prefix_list_ids = var.enable_ec2_instance_connect ? [
+      data.aws_ec2_managed_prefix_list.ec2_instance_connect[0].id
+    ] : []
   }
 
   ingress {
@@ -118,9 +130,9 @@ resource "aws_instance" "shop" {
     mysql_password      = var.mysql_password
     mysql_root_password = var.mysql_root_password
     mysql_bind_host     = var.expose_mysql ? "0.0.0.0" : "127.0.0.1"
-    admin_user_id   = var.admin_user_id
-    admin_password  = var.admin_password
-    admin_user_name = var.admin_user_name
+    admin_user_id       = var.admin_user_id
+    admin_password      = var.admin_password
+    admin_user_name     = var.admin_user_name
   })
 
   root_block_device {
