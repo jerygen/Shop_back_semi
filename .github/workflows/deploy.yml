@@ -117,33 +117,140 @@ jobs:
     steps:
       - name: Deploy application container
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          APP_IMAGE: ${{ needs.build.outputs.image }}
+          APP_PORT: ${{ vars.APP_PORT || '9000' }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE || 'shop' }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER || 'admin' }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD || 'admin1234' }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD || 'admin1234' }}
+          JPA_DDL_AUTO: ${{ vars.JPA_DDL_AUTO || 'update' }}
+          JPA_SHOW_SQL: ${{ vars.JPA_SHOW_SQL || 'false' }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'change_me_to_a_very_long_random_secret' }}
+          ADMIN_USER_ID: ${{ secrets.ADMIN_USER_ID }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USER_NAME: ${{ vars.ADMIN_USER_NAME || 'Administrator' }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
           timeout: 30s
           command_timeout: 5m
+          envs: APP_IMAGE,APP_PORT,MYSQL_DATABASE,MYSQL_USER,MYSQL_PASSWORD,MYSQL_ROOT_PASSWORD,JPA_DDL_AUTO,JPA_SHOW_SQL,JWT_SECRET,ADMIN_USER_ID,ADMIN_PASSWORD,ADMIN_USER_NAME
           script: |
             set -e
             export COMPOSE_PROGRESS=plain
             export DOCKER_CLI_HINTS=false
+
+            if ! command -v docker >/dev/null 2>&1; then
+              sudo apt-get update -y
+              sudo apt-get install -y ca-certificates curl docker.io
+              sudo systemctl enable docker
+              sudo systemctl start docker
+            fi
+
+            if ! docker compose version >/dev/null 2>&1; then
+              sudo mkdir -p /usr/local/lib/docker/cli-plugins
+              sudo curl -SL "https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64" \
+                -o /usr/local/lib/docker/cli-plugins/docker-compose
+              sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+            fi
+
+            sudo usermod -aG docker "$USER" || true
+            sudo mkdir -p /opt/shop
+            sudo chown -R "$USER":"$USER" /opt/shop
+
+            DOCKER="docker"
+            if ! docker ps >/dev/null 2>&1; then
+              DOCKER="sudo docker"
+            fi
+
             cd /opt/shop
 
             if [ -n "${{ secrets.GHCR_USERNAME }}" ] && [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
-              echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+              echo "${{ secrets.GHCR_TOKEN }}" | $DOCKER login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             fi
 
-            if grep -q '^APP_IMAGE=' .env; then
-              sed -i 's|^APP_IMAGE=.*|APP_IMAGE=${{ needs.build.outputs.image }}|' .env
-            else
-              printf '\nAPP_IMAGE=${{ needs.build.outputs.image }}\n' >> .env
-            fi
+            cat > .env <<ENV
+            APP_IMAGE=${APP_IMAGE}
+            APP_BIND_HOST=0.0.0.0
+            APP_PORT=${APP_PORT}
+
+            MYSQL_DATABASE=${MYSQL_DATABASE}
+            MYSQL_USER=${MYSQL_USER}
+            MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+
+            DB_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+            DB_USERNAME=${MYSQL_USER}
+            DB_PASSWORD=${MYSQL_PASSWORD}
+
+            JPA_DDL_AUTO=${JPA_DDL_AUTO}
+            JPA_SHOW_SQL=${JPA_SHOW_SQL}
+            JWT_SECRET=${JWT_SECRET}
+
+            ADMIN_USER_ID=${ADMIN_USER_ID}
+            ADMIN_PASSWORD=${ADMIN_PASSWORD}
+            ADMIN_USER_NAME=${ADMIN_USER_NAME}
+            ENV
+
+            chmod 600 .env
+
+            cat > docker-compose.yml <<'COMPOSE'
+            services:
+              app:
+                image: ${APP_IMAGE}
+                container_name: shop-app
+                restart: unless-stopped
+                ports:
+                  - "${APP_BIND_HOST:-0.0.0.0}:${APP_PORT:-9000}:9000"
+                environment:
+                  SERVER_PORT: 9000
+                  DB_URL: "${DB_URL}"
+                  DB_USERNAME: "${DB_USERNAME}"
+                  DB_PASSWORD: "${DB_PASSWORD}"
+                  JPA_DDL_AUTO: "${JPA_DDL_AUTO:-update}"
+                  JPA_SHOW_SQL: "${JPA_SHOW_SQL:-false}"
+                  JWT_SECRET: "${JWT_SECRET}"
+                  ADMIN_USER_ID: "${ADMIN_USER_ID:-}"
+                  ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+                  ADMIN_USER_NAME: "${ADMIN_USER_NAME:-Administrator}"
+                depends_on:
+                  mysql:
+                    condition: service_healthy
+
+              mysql:
+                image: mysql:8.4
+                container_name: shop-mysql
+                restart: unless-stopped
+                ports:
+                  - "127.0.0.1:3306:3306"
+                environment:
+                  MYSQL_DATABASE: "${MYSQL_DATABASE:-shop}"
+                  MYSQL_USER: "${MYSQL_USER:-admin}"
+                  MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+                  MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+                  TZ: Asia/Seoul
+                command:
+                  - --character-set-server=utf8mb4
+                  - --collation-server=utf8mb4_unicode_ci
+                volumes:
+                  - mysql_data:/var/lib/mysql
+                healthcheck:
+                  test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD}"]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 10
+
+            volumes:
+              mysql_data:
+            COMPOSE
 
             echo "Pulling application image"
-            docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml pull app
+            $DOCKER compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml pull app
 
             echo "Starting application container"
-            docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d --remove-orphans app
+            $DOCKER compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d --remove-orphans app
 
             echo "Checking application from EC2"
             for i in 1 2 3 4 5 6; do
@@ -156,7 +263,7 @@ jobs:
             done
 
             curl -fsS http://127.0.0.1:9000/swagger >/dev/null || {
-              docker logs shop-app --tail=100
+              $DOCKER logs shop-app --tail=100
               exit 1
             }
 
