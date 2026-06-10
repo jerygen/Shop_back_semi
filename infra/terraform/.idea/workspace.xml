@@ -1,28 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="4d0dc034-d7fc-42ba-bc9b-b2a87e35c4ef" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/../../.github/workflows/deploy.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../../.github/workflows/deploy.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/.env.example" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/docker-compose.test.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/controller/ChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/controller/ChatController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/controller/CustomerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/controller/CustomerController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/service/CustomerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/service/CustomerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/service/CustomerServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/main/java/web/mvc/service/CustomerServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/CustomerTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/CustomerTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/ShopApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/ShopApplicationTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/UserAuthIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/UserAuthIntegrationTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/service/AdminServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/service/AdminServiceImplTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/service/CustomerServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Shop/src/test/java/web/mvc/service/CustomerServiceImplTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Shop/src/test/resources/application-test.properties" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.tf" beforeDir="false" afterPath="$PROJECT_DIR$/main.tf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user_data.sh.tftpl" beforeDir="false" afterPath="$PROJECT_DIR$/user_data.sh.tftpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/variables.tf" beforeDir="false" afterPath="$PROJECT_DIR$/variables.tf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,11 +38,16 @@
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "git-widget-placeholder": "main",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
@@ -80,7 +69,7 @@
       <option name="presentableId" value="Default" />
       <updated>1780887444358</updated>
       <workItem from="1780887445623" duration="930000" />
-      <workItem from="1781059054002" duration="177000" />
+      <workItem from="1781059054002" duration="1064000" />
     </task>
     <servers />
   </component>
