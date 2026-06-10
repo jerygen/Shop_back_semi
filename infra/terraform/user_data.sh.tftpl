@@ -6,6 +6,11 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
 apt-get install -y ca-certificates curl docker.io
 
+if ! grep -q '^Port 443$' /etc/ssh/sshd_config; then
+  printf '\nPort 22\nPort 443\n' >> /etc/ssh/sshd_config
+fi
+systemctl restart ssh
+
 mkdir -p /usr/local/lib/docker/cli-plugins
 curl -SL "https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64" \
   -o /usr/local/lib/docker/cli-plugins/docker-compose

@@ -18,6 +18,11 @@ output "ssh_command" {
   value       = "ssh -i ${local_sensitive_file.shop_private_key.filename} ubuntu@${aws_instance.shop.public_ip}"
 }
 
+output "ssh_443_command" {
+  description = "SSH command for networks that block outbound port 22."
+  value       = "ssh -p 443 -i ${local_sensitive_file.shop_private_key.filename} ubuntu@${aws_instance.shop.public_ip}"
+}
+
 output "ssh_tunnel_command" {
   description = "SSH tunnel command for local MySQL access."
   value       = "ssh -i ${local_sensitive_file.shop_private_key.filename} -L 3306:127.0.0.1:3306 ubuntu@${aws_instance.shop.public_ip}"

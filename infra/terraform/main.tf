@@ -113,6 +113,22 @@ resource "aws_security_group" "shop_ec2" {
   }
 
   ingress {
+    description = "HTTPS or SSH fallback"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = local.allowed_ssh_cidrs
+  }
+
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.allowed_app_cidr]
+  }
+
+  ingress {
     description = "Spring Boot application"
     from_port   = var.app_port
     to_port     = var.app_port

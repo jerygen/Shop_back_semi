@@ -125,6 +125,8 @@ jobs:
           command_timeout: 5m
           script: |
             set -e
+            export COMPOSE_PROGRESS=plain
+            export DOCKER_CLI_HINTS=false
             cd /opt/shop
 
             if [ -n "${{ secrets.GHCR_USERNAME }}" ] && [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
@@ -137,7 +139,13 @@ jobs:
               printf '\nAPP_IMAGE=${{ needs.build.outputs.image }}\n' >> .env
             fi
 
+            echo "Pulling application image"
             docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml pull app
-            docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d app
+
+            echo "Starting application container"
+            docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml up -d --remove-orphans app
+
+            echo "Deployment status"
             docker compose --env-file /opt/shop/.env -f /opt/shop/docker-compose.yml ps
-            docker image prune -f
+
+            echo "Deployment completed"
