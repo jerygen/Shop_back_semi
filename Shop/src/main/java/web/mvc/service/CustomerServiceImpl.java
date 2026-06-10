@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.domain.*;
 import web.mvc.dto.request.CartAddReq;
+import web.mvc.dto.request.CartOrderCreateReq;
 import web.mvc.dto.request.OrderCreateReq;
 import web.mvc.dto.response.CartItemRes;
 import web.mvc.dto.response.CartRes;
@@ -138,7 +139,7 @@ public class CustomerServiceImpl implements CustomerService{
 
     @Override
     @Transactional
-    public OrderRes createCartOrders(String userId, OrderCreateReq orderCreateReq) {
+    public OrderRes createCartOrders(String userId, CartOrderCreateReq cartOrderCreateReq) {
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         Cart cart = cartRepository.findCartsByUserId(userId).orElseThrow(() -> new CartException(ErrorCode.CART_EMPTY));
 
@@ -147,7 +148,7 @@ public class CustomerServiceImpl implements CustomerService{
         }
 
         Orders orders = Orders.builder()
-                .address(orderCreateReq.getAddress())
+                .address(cartOrderCreateReq.getAddress())
                 .user(user)
                 .totalAmount(0)
                 .build();

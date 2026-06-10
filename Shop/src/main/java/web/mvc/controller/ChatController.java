@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import web.mvc.dto.request.ChatMessageReq;
 import web.mvc.dto.response.ApiResponse;
 import web.mvc.dto.response.ChatMessageRes;
 import web.mvc.dto.response.ChatRoomRes;
@@ -36,5 +37,15 @@ public class ChatController {
     ) {
         List<ChatMessageRes> messages = chatService.findMessages(userDetails.getUser().getUserId(), chatRoomNo);
         return ResponseEntity.ok(ApiResponse.success(messages));
+    }
+
+    @PostMapping("/api/chat/rooms/{chatRoomNo}/messages")
+    public ResponseEntity<ApiResponse<ChatMessageRes>> sendMessage(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long chatRoomNo,
+            @RequestBody ChatMessageReq chatMessageReq
+    ) {
+        ChatMessageRes message = chatService.sendMessage(userDetails.getUser().getUserId(), chatRoomNo, chatMessageReq);
+        return ResponseEntity.ok(ApiResponse.success(message));
     }
 }

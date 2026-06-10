@@ -1,6 +1,7 @@
 package web.mvc.service;
 
 import web.mvc.dto.request.CartAddReq;
+import web.mvc.dto.request.CartOrderCreateReq;
 import web.mvc.dto.request.OrderCreateReq;
 import web.mvc.dto.response.CartItemRes;
 import web.mvc.dto.response.CartRes;
@@ -23,5 +24,5 @@ public interface CustomerService   {
 
     CartRes findCartByUserId(String userId);
 
-    OrderRes createCartOrders(String userId, OrderCreateReq orderCreateReq);
+    OrderRes createCartOrders(String userId, CartOrderCreateReq cartOrderCreateReq);
 }

@@ -63,7 +63,7 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: admin1234
           SPRING_JPA_HIBERNATE_DDL_AUTO: update
           SPRING_JPA_SHOW_SQL: false
-          SPRING_JWT_SECRET: change_me_to_a_long_random_secret
+          SPRING_JWT_SECRET: SahL5G83mGzrulJzffw-eD7RqphsXluJPBwxu0ncBFo
         run: |
           chmod +x ./mvnw
           ./mvnw -q test

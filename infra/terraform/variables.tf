@@ -134,3 +134,27 @@ variable "mysql_root_password" {
     error_message = "mysql_root_password must be at least 8 characters."
   }
 }
+
+variable "admin_user_id" {
+  description = "Initial admin account user id. Leave empty to skip admin bootstrap."
+  type        = string
+  default     = ""
+}
+
+variable "admin_password" {
+  description = "Initial admin account password. Leave empty to skip admin bootstrap."
+  type        = string
+  sensitive   = true
+  default     = ""
+
+  validation {
+    condition     = var.admin_password == "" || length(var.admin_password) >= 8
+    error_message = "admin_password must be empty or at least 8 characters."
+  }
+}
+
+variable "admin_user_name" {
+  description = "Initial admin account display name."
+  type        = string
+  default     = "Administrator"
+}

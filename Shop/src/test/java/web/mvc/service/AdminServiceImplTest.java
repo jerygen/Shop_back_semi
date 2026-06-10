@@ -166,7 +166,7 @@ class AdminServiceImplTest {
         User user = user("customer01", "Customer", "ROLE_USER");
         user.setRegDate(Timestamp.valueOf("2026-06-09 10:00:00"));
 
-        when(userRepository.findAllWithOrderCount()).thenReturn(List.of(new Object[]{user, 3L}));
+        when(userRepository.findAllWithOrderCount()).thenReturn(List.<Object[]>of(new Object[]{user, 3L}));
 
         List<AdminUserRes> result = adminService.findAllUsersWithOrderCount();
 

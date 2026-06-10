@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import web.mvc.domain.*;
 import web.mvc.dto.request.CartAddReq;
+import web.mvc.dto.request.CartOrderCreateReq;
 import web.mvc.dto.request.OrderCreateReq;
 import web.mvc.dto.response.CartItemRes;
 import web.mvc.dto.response.CartRes;
@@ -168,7 +169,7 @@ class CustomerServiceImplTest {
         Cart cart = cart(1L, user);
         cart.addCartItem(cartItem(10L, cart, keyboard, 2));
         cart.addCartItem(cartItem(11L, cart, mouse, 3));
-        OrderCreateReq request = OrderCreateReq.builder()
+        CartOrderCreateReq request = CartOrderCreateReq.builder()
                 .address("Seoul")
                 .build();
 
@@ -209,7 +210,7 @@ class CustomerServiceImplTest {
         when(userRepository.findByUserId("customer01")).thenReturn(Optional.of(user));
         when(cartRepository.findCartsByUserId("customer01")).thenReturn(Optional.of(cart));
 
-        assertThatThrownBy(() -> customerService.createCartOrders("customer01", OrderCreateReq.builder().address("Seoul").build()))
+        assertThatThrownBy(() -> customerService.createCartOrders("customer01", CartOrderCreateReq.builder().address("Seoul").build()))
                 .isInstanceOf(CartException.class)
                 .satisfies(exception ->
                         assertThat(((CartException) exception).getErrorCode())

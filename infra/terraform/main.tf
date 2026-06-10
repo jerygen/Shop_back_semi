@@ -118,6 +118,9 @@ resource "aws_instance" "shop" {
     mysql_password      = var.mysql_password
     mysql_root_password = var.mysql_root_password
     mysql_bind_host     = var.expose_mysql ? "0.0.0.0" : "127.0.0.1"
+    admin_user_id   = var.admin_user_id
+    admin_password  = var.admin_password
+    admin_user_name = var.admin_user_name
   })
 
   root_block_device {

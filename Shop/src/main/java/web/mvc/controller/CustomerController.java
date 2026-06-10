@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.dto.request.CartAddReq;
+import web.mvc.dto.request.CartOrderCreateReq;
 import web.mvc.dto.request.OrderCreateReq;
 import web.mvc.dto.response.*;
 import web.mvc.security.CustomUserDetails;
@@ -60,7 +61,7 @@ public class CustomerController {
     }
 
     @PostMapping("/cart/orders")
-    public ResponseEntity<ApiResponse<OrderRes>> createCartOrders(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody OrderCreateReq orderCreateReq) {
+    public ResponseEntity<ApiResponse<OrderRes>> createCartOrders(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody CartOrderCreateReq orderCreateReq) {
         String userId = userDetails.getUser().getUserId();
         OrderRes orderRes = customerService.createCartOrders(userId, orderCreateReq);
         return ResponseEntity.ok(ApiResponse.success(orderRes));

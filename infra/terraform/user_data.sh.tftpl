@@ -2,7 +2,12 @@
 set -euo pipefail
 
 dnf update -y
-dnf install -y docker docker-compose-plugin
+dnf install -y docker
+
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -SL "https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64" \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 systemctl enable docker
 systemctl start docker
@@ -27,6 +32,10 @@ DB_PASSWORD=${mysql_password}
 JPA_DDL_AUTO=${jpa_ddl_auto}
 JPA_SHOW_SQL=${jpa_show_sql}
 JWT_SECRET=${jwt_secret}
+
+ADMIN_USER_ID=${admin_user_id}
+ADMIN_PASSWORD=${admin_password}
+ADMIN_USER_NAME=${admin_user_name}
 ENV
 
 chmod 600 /opt/shop/.env
@@ -47,6 +56,9 @@ services:
       JPA_DDL_AUTO: "$${JPA_DDL_AUTO:-update}"
       JPA_SHOW_SQL: "$${JPA_SHOW_SQL:-false}"
       JWT_SECRET: "$${JWT_SECRET}"
+      ADMIN_USER_ID: "$${ADMIN_USER_ID:-}"
+      ADMIN_PASSWORD: "$${ADMIN_PASSWORD:-}"
+      ADMIN_USER_NAME: "$${ADMIN_USER_NAME:-Administrator}"
     depends_on:
       mysql:
         condition: service_healthy
