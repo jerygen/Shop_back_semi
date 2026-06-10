@@ -9,13 +9,15 @@ import web.mvc.domain.User;
 @Setter
 @ToString
 public class UserReq {
-    private String userName;
+    private String userId;
     private String password;
+    private String userName;
 
-    public User toUser(UserReq userReq){
+    public User toUser() {
         return User.builder()
-                .userName(userReq.getUserName())
-                .password(userReq.getPassword())
+                .userId(userId)
+                .password(password)
+                .userName(userName)
                 .build();
     }
 }
